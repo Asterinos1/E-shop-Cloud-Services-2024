@@ -21,7 +21,6 @@ body {
 }
 
 .navbar button {
-    float: left;
     display: block;
     color: white;
     text-align: center;
@@ -29,6 +28,8 @@ body {
     border: none;
     background-color: #656161;
     cursor: pointer;
+    margin: 0 5px; /* Add margin between buttons */
+    transition: background-color 0.3s; /* Smooth background color transition */
 }
 
 .navbar button:hover {
@@ -56,19 +57,57 @@ body {
     border-radius: 5px; /* Rounded corners */
     padding: 15px; /* Inner padding */
     text-align: center; /* Center text */
-    transition: transform 0.2s; /* Animation on hover */
+    transition: transform 0.2s, box-shadow 0.2s; /* Animation on hover */
 }
 
 .product-item:hover {
     transform: scale(1.05); /* Slightly enlarge the box on hover */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Add shadow effect on hover */
 }
 
 .product-item h3 {
     margin: 0 0 10px; /* Margin for the product name */
     font-size: 1.5em;  /* Adjust font size for the product name */
+    color: #a2d1e1; /* Light blue color for product names */
 }
 
 .product-item p {
     margin: 5px 0; /* Margin for price and description */
     font-size: 1em; /* Standard font size for details */
+}
+
+.product-form {
+    background-color: #333; /* Form background color */
+    border-radius: 5px; /* Rounded corners for the form */
+    padding: 20px; /* Inner padding for the form */
+    margin-bottom: 20px; /* Space below the form */
+}
+
+.product-form label {
+    display: block; /* Block display for labels */
+    margin: 10px 0 5px; /* Margin for labels */
+}
+
+.product-form input, .product-form textarea {
+    width: 100%; /* Full width for inputs */
+    padding: 10px; /* Inner padding for inputs */
+    border: 1px solid #444; /* Border color */
+    border-radius: 5px; /* Rounded corners for inputs */
+    background-color: #1a1a1a; /* Input background color */
+    color: white; /* Input text color */
+}
+
+.product-form button {
+    margin-top: 10px; /* Space above the button */
+    background-color: #a2d1e1; /* Button background color */
+    color: black; /* Button text color */
+    border: none; /* Remove border */
+    padding: 10px; /* Padding for button */
+    border-radius: 5px; /* Rounded corners for button */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth background color transition */
+}
+
+.product-form button:hover {
+    background-color: #88b9cc; /* Button hover color */
 }

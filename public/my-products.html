@@ -17,7 +17,7 @@
 
     <div id="content">
         <h1>Add Your Products</h1>
-        <form id="add-product-form">
+        <form id="add-product-form" class="product-form">
             <label for="name">Product Name:</label>
             <input type="text" id="name" name="name" required>
             
@@ -34,7 +34,7 @@
         <ul id="product-list"></ul> <!-- List to display products -->
 
         <h2>Update Product</h2>
-        <form id="update-product-form" style="display:none;">
+        <form id="update-product-form" style="display:none;" class="product-form">
             <label for="update-name">Product Name:</label>
             <input type="text" id="update-name" name="name">
             
@@ -59,7 +59,12 @@
             productList.innerHTML = ''; // Clear the existing list
             products.forEach(product => {
                 const li = document.createElement('li');
-                li.textContent = `${product.name} - ${product.description} - $${product.price}`;
+                li.classList.add('product-item');
+                li.innerHTML = `
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <p>Price: $${product.price}</p>
+                `;
                 
                 // Create edit button
                 const editButton = document.createElement('button');
