@@ -9,6 +9,7 @@ async function loadProducts() {
         
         products.forEach(product => {
             const li = document.createElement('li');
+            li.classList.add('product-item'); // Add class for styling
             li.textContent = `Name: ${product.name}, Price: ${product.price}`;
             productList.appendChild(li);
         });
@@ -65,3 +66,5 @@ document.addEventListener("DOMContentLoaded", () => {
         loadOrders();
     }
 });
+
+
