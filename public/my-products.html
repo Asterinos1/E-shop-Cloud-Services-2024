@@ -17,13 +17,48 @@
 
     <div id="content">
         <h1>Add Your Products</h1>
-        <p>This is where you can add new products to your e-shop.</p>
-        <ul>
-            <li>Product A: Description of product A</li>
-            <li>Product B: Description of product B</li>
-            <li>Product C: Description of product C</li>
-        </ul>
+        <form id="add-product-form">
+            <label for="name">Product Name:</label>
+            <input type="text" id="name" name="name" required>
+            
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" required></textarea>
+            
+            <label for="price">Price:</label>
+            <input type="number" id="price" name="price" step="0.01" required>
+            
+            <button type="submit">Add Product</button>
+        </form>
     </div>
+
+    <script>
+        document.getElementById('add-product-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const description = document.getElementById('description').value;
+            const price = parseFloat(document.getElementById('price').value); // Ensure price is a number
+
+            // Send the request to the API
+            const response = await fetch('http://localhost:5000/api/products', { // Full URL to API
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, description, price }), // Convert to JSON
+            });
+
+            if (response.ok) {
+                const newProduct = await response.json();
+                alert(`Product added: ${newProduct.name}`);
+                // Optionally clear the form fields
+                document.getElementById('add-product-form').reset();
+            } else {
+                const errorMessage = await response.text(); // Get the error message
+                alert(`Failed to add product: ${errorMessage}`); // Show the error message
+            }
+        });
+    </script>
 
     <script src="script.js"></script>
 </body>
