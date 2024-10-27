@@ -29,35 +29,135 @@
             
             <button type="submit">Add Product</button>
         </form>
+
+        <h2>Your Products</h2>
+        <ul id="product-list"></ul> <!-- List to display products -->
+
+        <h2>Update Product</h2>
+        <form id="update-product-form" style="display:none;">
+            <label for="update-name">Product Name:</label>
+            <input type="text" id="update-name" name="name">
+            
+            <label for="update-description">Description:</label>
+            <textarea id="update-description" name="description"></textarea>
+            
+            <label for="update-price">Price:</label>
+            <input type="number" id="update-price" name="price" step="0.01">
+
+            <input type="hidden" id="update-id"> <!-- Hidden input to store the product ID -->
+            <button type="submit">Update Product</button>
+        </form>
     </div>
 
     <script>
+        // Fetch and display products on page load
+        async function fetchProducts() {
+            const response = await fetch('http://localhost:5000/api/products');
+            const products = await response.json();
+            const productList = document.getElementById('product-list');
+
+            productList.innerHTML = ''; // Clear the existing list
+            products.forEach(product => {
+                const li = document.createElement('li');
+                li.textContent = `${product.name} - ${product.description} - $${product.price}`;
+                
+                // Create edit button
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.onclick = () => loadProductForUpdate(product);
+
+                // Create delete button
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteProduct(product.id);
+
+                li.appendChild(editButton); // Add the edit button to the list item
+                li.appendChild(deleteButton); // Add the delete button to the list item
+                productList.appendChild(li); // Add the list item to the product list
+            });
+        }
+
+        // Load product details into the update form
+        function loadProductForUpdate(product) {
+            document.getElementById('update-name').value = product.name;
+            document.getElementById('update-description').value = product.description;
+            document.getElementById('update-price').value = product.price;
+            document.getElementById('update-id').value = product.id; // Set the product ID
+            document.getElementById('update-product-form').style.display = 'block'; // Show update form
+        }
+
+        // Function to delete a product
+        async function deleteProduct(id) {
+            const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Product deleted successfully');
+                fetchProducts(); // Refresh the product list
+            } else {
+                const errorMessage = await response.text();
+                alert(`Failed to delete product: ${errorMessage}`);
+            }
+        }
+
+        // Function to update a product
+        document.getElementById('update-product-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const id = document.getElementById('update-id').value;
+            const name = document.getElementById('update-name').value.trim();
+            const description = document.getElementById('update-description').value.trim();
+            const price = parseFloat(document.getElementById('update-price').value).toFixed(2);
+
+            const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, description, price }),
+            });
+
+            if (response.ok) {
+                const updatedProduct = await response.json();
+                alert(`Product updated: ${updatedProduct.name}`);
+                document.getElementById('update-product-form').reset();
+                fetchProducts(); // Refresh the product list
+            } else {
+                const errorMessage = await response.text();
+                alert(`Failed to update product: ${errorMessage}`);
+            }
+        });
+
+        // Event listener for adding products
         document.getElementById('add-product-form').addEventListener('submit', async (event) => {
             event.preventDefault();
 
-            const name = document.getElementById('name').value;
-            const description = document.getElementById('description').value;
-            const price = parseFloat(document.getElementById('price').value); // Ensure price is a number
+            const name = document.getElementById('name').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const price = parseFloat(document.getElementById('price').value).toFixed(2);
 
-            // Send the request to the API
-            const response = await fetch('http://localhost:5000/api/products', { // Full URL to API
+            const response = await fetch('http://localhost:5000/api/products', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name, description, price }), // Convert to JSON
+                body: JSON.stringify({ name, description, price }),
             });
 
             if (response.ok) {
                 const newProduct = await response.json();
                 alert(`Product added: ${newProduct.name}`);
-                // Optionally clear the form fields
                 document.getElementById('add-product-form').reset();
+                fetchProducts(); // Refresh the product list
             } else {
-                const errorMessage = await response.text(); // Get the error message
-                alert(`Failed to add product: ${errorMessage}`); // Show the error message
+                const errorMessage = await response.text();
+                alert(`Failed to add product: ${errorMessage}`);
             }
         });
+
+        // Load products when the page loads
+        fetchProducts();
     </script>
 
     <script src="script.js"></script>
