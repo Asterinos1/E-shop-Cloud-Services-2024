@@ -10,15 +10,16 @@
     <h1 class="shop-title">E-SHOP</h1>
     <div class="navbar">
         <button onclick="location.href='index.html'">Home</button>
-        <button onclick="location.href='cart.html'">Shopping Cart</button>
+        <button onclick="location.href='cart.html'">Shopping Cart <span id="cart-count">0</span></button>
         <button onclick="location.href='my-products.html'">My Products</button>
         <button onclick="location.href='orders.html'">Orders</button>
     </div>
     
     <h1>Your Shopping Cart</h1>
     <ul id="cart-list"></ul>
+    <h2>Total: $<span id="total-price">0</span></h2>
+    <button onclick="resetCart()">Reset Cart</button>
 
     <script src="script.js"></script>
 </body>
-
 </html>

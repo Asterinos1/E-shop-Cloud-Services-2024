@@ -76,6 +76,46 @@ body {
     font-size: 1em; /* Standard font size for details */
 }
 
+/* New styles for the cart page */
+#cart-list {
+    list-style-type: none; /* Remove default list styling */
+    padding: 0; /* Remove padding */
+    margin: 0; /* Remove margin */
+}
+
+#cart-list li {
+    background-color: #2a2a2a; /* Darker background for cart items */
+    border: 1px solid #444; /* Border around cart items */
+    border-radius: 5px; /* Rounded corners */
+    padding: 15px; /* Inner padding */
+    margin-bottom: 15px; /* Space between cart items */
+    display: flex; /* Flex layout for cart items */
+    justify-content: space-between; /* Space between item details and price */
+    align-items: center; /* Center align items vertically */
+}
+
+#total-price {
+    font-size: 1.5em; /* Larger font size for total price */
+    text-align: right; /* Align total price to the right */
+    margin-top: 20px; /* Margin above total price */
+    color: #a2d1e1; /* Light blue color for total price */
+}
+
+.reset-button {
+    background-color: #a2d1e1; /* Button background color */
+    color: black; /* Button text color */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Padding for button */
+    border-radius: 5px; /* Rounded corners for button */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth background color transition */
+    margin-top: 20px; /* Space above the button */
+}
+
+.reset-button:hover {
+    background-color: #88b9cc; /* Button hover color */
+}
+
 .product-form {
     background-color: #333; /* Form background color */
     border-radius: 5px; /* Rounded corners for the form */
