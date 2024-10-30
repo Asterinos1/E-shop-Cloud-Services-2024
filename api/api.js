@@ -7,7 +7,7 @@ const cors = require('cors'); // Import CORS
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-//Regarding image handling
+//Regarding image handling **********
 const multer = require('multer');
 const path = require('path');
 
@@ -28,6 +28,19 @@ const upload = multer({
     }
 }).single('image'); // Expect a single file upload with the field name "image"
 
+// Check file type
+function checkFileType(file, cb) {
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb('Error: Images Only!'); // Error message if the file type is not allowed
+    }
+}
+//end of image handling**********
 
 // new as of 27/10 
 app.use(express.json());
