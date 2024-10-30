@@ -9,8 +9,8 @@ async function loadProducts() {
         
         products.forEach(product => {
             const li = document.createElement('li');
-            li.classList.add('product-item'); // Add class for styling
-            
+            li.classList.add('product-item');
+        
             // Create product details
             const name = document.createElement('h3');
             name.textContent = product.name;
@@ -19,15 +19,27 @@ async function loadProducts() {
             price.textContent = `Price: $${product.price}`;
             
             const description = document.createElement('p');
-            description.textContent = `Description: ${product.description}`; // Include product description
-
+            description.textContent = `Description: ${product.description}`;
+        
+            // Create image element
+            const img = document.createElement('img');
+            img.src = product.image_url; // Set image source
+            img.alt = product.name; // Set alt text
+            img.style.maxWidth = '200px'; // Set maximum width for display
+        
+            const quantity = document.createElement('p');
+            quantity.textContent = `Quantity: ${product.quantity}`;
+        
             // Append elements to the product item
+            li.appendChild(img);
             li.appendChild(name);
             li.appendChild(price);
             li.appendChild(description);
+            li.appendChild(quantity);
             
             productList.appendChild(li);
         });
+        
     } catch (error) {
         console.error('Error loading products:', error);
     }

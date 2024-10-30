@@ -26,7 +26,13 @@
             
             <label for="price">Price:</label>
             <input type="number" id="price" name="price" step="0.01" required>
-            
+        
+            <label for="image_url">Image URL:</label>
+            <input type="text" id="image_url" name="image_url" required>
+        
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required>
+        
             <button type="submit">Add Product</button>
         </form>
 
@@ -141,13 +147,15 @@
             const name = document.getElementById('name').value.trim();
             const description = document.getElementById('description').value.trim();
             const price = parseFloat(document.getElementById('price').value).toFixed(2);
+            const image_url = document.getElementById('image_url').value.trim();
+            const quantity = parseInt(document.getElementById('quantity').value);
 
             const response = await fetch('http://localhost:5000/api/products', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name, description, price }),
+                body: JSON.stringify({ name, description, price, image_url, quantity }),
             });
 
             if (response.ok) {
@@ -160,6 +168,7 @@
                 alert(`Failed to add product: ${errorMessage}`);
             }
         });
+
 
         // Load products when the page loads
         fetchProducts();
