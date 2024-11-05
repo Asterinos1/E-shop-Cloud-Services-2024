@@ -149,6 +149,97 @@ function resetCart() {
     updateCartCount(); // Update cart count display
 }
 
+// Function to place an order
+async function placeOrder() {
+    const cartItems = Object.values(cart).filter(item => item.quantity > 0); // Get all items with quantity > 0
+
+    // Construct products array in the correct format for the API
+    const products = cartItems.map(item => ({
+        title: item.name,
+        amount: item.quantity,
+        product_id: item.id
+    }));
+
+    const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0); // Calculate total price
+
+    // Create the order payload
+    const orderData = {
+        products: products, // Send products as JSON
+        total_price: totalPrice.toFixed(2), // Total price with two decimal places
+        status: 'PENDING' // Default status for now
+    };
+
+    try {
+        // Send POST request to create the order
+        const response = await fetch('http://localhost:5001/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData) // Send order data as JSON
+        });
+
+        if (response.ok) {
+            alert('Order placed successfully!');
+            resetCart(); // Clear the cart after successful order
+        } else {
+            const errorData = await response.json();
+            console.error('Error placing order:', errorData);
+            alert('Error placing order. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error placing order:', error);
+        alert('Error placing order. Please try again.');
+    }
+}
+
+// Function to load orders and display them on the orders page
+async function loadOrders() {
+    try {
+        // Fetch orders from the API
+        const response = await fetch('http://localhost:5001/api/orders');
+        const orders = await response.json();
+
+        // Reference to the orders list in the HTML
+        const ordersList = document.getElementById('orders-list');
+        ordersList.innerHTML = ''; // Clear any existing orders
+
+        if (orders.length === 0) {
+            // If no orders, show a message
+            ordersList.textContent = 'No orders have been placed yet.';
+            return;
+        }
+
+        // Loop through each order and display it
+        orders.forEach(order => {
+            const li = document.createElement('li');
+            const orderDetails = document.createElement('div');
+
+            // Create a display for the order
+            let productsDisplay = '';
+            order.products.forEach(product => {
+                productsDisplay += `${product.title} (x${product.amount}) - Product ID: ${product.product_id}<br>`;
+            });
+
+            // Fill order details
+            orderDetails.innerHTML = `
+                <h3>Order ID: ${order.id}</h3>
+                <p>Products: <br>${productsDisplay}</p>
+                <p>Total Price: $${order.total_price}</p>
+                <p>Status: ${order.status}</p>
+                <hr>
+            `;
+
+            // Append to the list
+            li.appendChild(orderDetails);
+            ordersList.appendChild(li);
+        });
+    } catch (error) {
+        console.error('Error loading orders:', error);
+    }
+}
+
+
 // Call relevant functions based on the page
 document.addEventListener("DOMContentLoaded", () => {
     loadCartFromLocalStorage(); // Load cart from local storage on page load
@@ -159,6 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (document.body.id === 'cart-page') {
         loadCart();
     } else if (document.body.id === 'orders-page') {
-        // loadOrders();
+        loadOrders();
     }
 });
