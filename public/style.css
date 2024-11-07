@@ -194,6 +194,7 @@ h1, h2, h3, p {
     color: #61A1D7;
 }
 
+
 button#place-order-btn {
     background-color: #3E5B80;
     color: #f1f1f1;
@@ -209,6 +210,23 @@ button#place-order-btn {
 button#place-order-btn:hover {
     background-color: #5A7FAE;
 }
+
+button#reset-cart-btn {
+    background-color: #3E5B80;
+    color: #f1f1f1;
+    font-size: 1.2rem;
+    border: none;
+    padding: 12px 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button#reset-cart-btn {
+    background-color: #5A7FAE;
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {

@@ -153,6 +153,11 @@ function resetCart() {
 async function placeOrder() {
     const cartItems = Object.values(cart).filter(item => item.quantity > 0); // Get all items with quantity > 0
 
+    if (cartItems.length === 0) {
+        alert('Empty cart! Please add products to the cart before placing an order.');
+        return; // Exit if the cart is empty
+    }
+
     // Construct products array in the correct format for the API
     const products = cartItems.map(item => ({
         title: item.name,
