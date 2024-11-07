@@ -173,7 +173,7 @@ async function placeOrder() {
         // Send POST request to create the order
         // const response = await fetch('http://localhost:5001/api/orders'
 
-        const response = await fetch('http://api2:5001/api/orders', {
+        const response = await fetch('http://localhost:5001/api/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -200,7 +200,7 @@ async function loadOrders() {
     try {
         // Fetch orders from the API
         // const response = await fetch('http://localhost:5001/api/orders');
-        const response = await fetch('http://api2:5001/api/orders');
+        const response = await fetch('http://localhost:5001/api/orders');
         const orders = await response.json();
 
         // Reference to the orders list in the HTML

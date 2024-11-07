@@ -5,13 +5,19 @@ const cors = require('cors'); // Import CORS
 const app = express();
 const PORT = process.env.PORT || 5001; // Different port to avoid conflict with api.js
 
+
+const corsOptions = {
+    origin: 'http://localhost:3000', // Allow the frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific HTTP methods
+  };
+  
+app.use(cors(corsOptions)); // Apply CORS with the specified options
+
+
 // Middleware
 app.use(express.json());
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
-
-// Enable CORS
-app.use(cors()); // This will allow all origins
 
 // Configure PostgreSQL connection to the orders_db
 // const pool = new Pool({
