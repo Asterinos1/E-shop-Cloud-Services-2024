@@ -14,13 +14,33 @@ app.use(bodyParser.json());
 app.use(cors()); // This will allow all origins
 
 // Configure PostgreSQL connection to the orders_db
+// const pool = new Pool({
+//     user: 'postgres',  
+//     host: 'localhost',
+//     database: 'orders_db',  // Connect to orders_db
+//     password: 'asterinos', // Your password
+//     port: 5432,
+// });
+
+// const pool = new Pool({
+//     user: 'postgres',
+//     host: 'orders_db',  // Use service name here
+//     database: 'orders_db',
+//     password: 'asterinos',
+//     port: 5432,
+// });
+
+// Configure the PostgreSQL connection using environment variables
 const pool = new Pool({
-    user: 'postgres',  
-    host: 'localhost',
-    database: 'orders_db',  // Connect to orders_db
-    password: 'asterinos', // Your password
-    port: 5432,
+    user: process.env.DB_USER,  
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD, 
+    port: process.env.DB_PORT,
 });
+
+
+
 
 // API endpoint to get all orders
 app.get('/api/orders', async (req, res) => {
@@ -33,7 +53,6 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// FOR LATER USE AS THE PROJECT PROGRESSES
 // API endpoint to get a specific order by ID
 app.get('/api/orders/:id', async (req, res) => {
     const { id } = req.params;
@@ -55,14 +74,15 @@ app.post('/api/orders', async (req, res) => {
     const { products, total_price, status } = req.body;
 
     // Validate input
-    if (!products || !total_price) {
-        return res.status(400).send('Products and total price are required.');
+    if (!products || !total_price || !status) {
+        return res.status(400).send('All fields are required');
     }
 
     try {
+        // Insert into the database with products being passed as a JSON object
         const result = await pool.query(
-            'INSERT INTO orders (products, total_price, status) VALUES ($1::jsonb, $2, $3) RETURNING *',
-            [JSON.stringify(products), total_price, status]
+            'INSERT INTO orders (products, total_price, status) VALUES ($1, $2, $3) RETURNING *',
+            [JSON.stringify(products), total_price, status] // Convert products to JSON format
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {

@@ -1,7 +1,0 @@
-npm init
-
-npm i express pg
-
-nodemon 'file name of the server' -> 'nodemon server'
-
-Node runs a server (localhost) using server.js which in turn uses the script.js to draw the things on screen

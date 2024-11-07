@@ -11,10 +11,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Serve uploaded images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// New for docker use
+const apiUrl = 'http://api:5000/api/products';  // Use 'api' as the service name
+
 // API endpoint to get products
 app.get('/products', async (req, res) => {
     try {
-        const response = await axios.get('http://localhost:5000/api/products');
+        const response = await axios.get(apiUrl);
         res.json(response.data);
     } catch (error) {
         console.error(error);

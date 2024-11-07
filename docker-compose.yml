@@ -1,0 +1,84 @@
+services:
+  # Server container
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Assuming server.js is in the root folder
+    ports:
+      - "3000:3000"
+    depends_on:
+      - eshop_db
+      - orders_db
+    environment:
+      - DB_HOST=eshop_db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=asterinos
+      - DB_NAME=eshop_db
+      - ORDERS_DB_HOST=orders_db
+      - ORDERS_DB_PORT=5432
+      - ORDERS_DB_USER=postgres
+      - ORDERS_DB_PASSWORD=asterinos
+      - ORDERS_DB_NAME=orders_db
+
+  # API container for eshop_db
+  api:
+    build:
+      context: ./api
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=eshop_db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=asterinos
+      - DB_NAME=eshop_db
+    depends_on:
+      - eshop_db
+
+  # API container for orders_db
+  api2:
+    build:
+      context: ./api2
+    ports:
+      - "5001:5001"
+    environment:
+      - DB_HOST=orders_db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=asterinos
+      - DB_NAME=orders_db
+    depends_on:
+      - orders_db
+
+  # PostgreSQL container for eshop_db
+  eshop_db:
+    image: postgres:17
+    container_name: eshop_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: asterinos
+      POSTGRES_DB: eshop_db
+    volumes:
+      - eshop_db_data:/var/lib/postgresql/data
+      - ./init_eshop_db.sql:/docker-entrypoint-initdb.d/init.sql  # Mount the SQL script for eshop_db
+    ports:
+      - "5432:5432"
+
+  # PostgreSQL container for orders_db
+  orders_db:
+    image: postgres:17
+    container_name: orders_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: asterinos
+      POSTGRES_DB: orders_db
+    volumes:
+      - orders_db_data:/var/lib/postgresql/data
+      - ./init_orders_db.sql:/docker-entrypoint-initdb.d/init.sql  # Mount the SQL script for orders_db
+    ports:
+      - "5433:5432"  # Different port mapping to avoid conflicts with eshop_db
+
+volumes:
+  eshop_db_data:
+  orders_db_data:

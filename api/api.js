@@ -53,13 +53,32 @@ app.use(cors()); // This will allow all origins
 
 
 // Configure the PostgreSQL connection
+// const pool = new Pool({
+//     user: 'postgres',  
+//     host: 'localhost',
+//     database: 'eshop_db',   
+//     password: 'asterinos', 
+//     port: 5432,
+// });
+
+// const pool = new Pool({
+//     user: 'postgres',
+//     host: 'eshop_db',  // Use service name here
+//     database: 'eshop_db',
+//     password: 'asterinos',
+//     port: 5432,
+// });
+
+// Configure the PostgreSQL connection using environment variables
 const pool = new Pool({
-    user: 'postgres',  
-    host: 'localhost',
-    database: 'eshop_db',   
-    password: 'asterinos', 
-    port: 5432,
+    user: process.env.DB_USER,  
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD, 
+    port: process.env.DB_PORT,
 });
+
+
 
 // API endpoint to get products
 app.get('/api/products', async (req, res) => {
