@@ -1,9 +1,9 @@
 services:
-  # Server container
+  #frontend container
   server:
     build:
       context: .
-      dockerfile: Dockerfile  # Assuming server.js is in the root folder
+      dockerfile: Dockerfile  
     ports:
       - "3000:3000"
     depends_on:
@@ -21,7 +21,7 @@ services:
       - ORDERS_DB_PASSWORD=asterinos
       - ORDERS_DB_NAME=orders_db
 
-  # API container for eshop_db
+  #container for eshop_db api
   api:
     build:
       context: ./api
@@ -36,7 +36,7 @@ services:
     depends_on:
       - eshop_db
 
-  # API container for orders_db
+  #container for orders_db api
   api2:
     build:
       context: ./api2
@@ -51,7 +51,7 @@ services:
     depends_on:
       - orders_db
 
-  # PostgreSQL container for eshop_db
+  #container for eshop_db
   eshop_db:
     image: postgres:17
     container_name: eshop_db
@@ -61,11 +61,11 @@ services:
       POSTGRES_DB: eshop_db
     volumes:
       - eshop_db_data:/var/lib/postgresql/data
-      - ./init_eshop_db.sql:/docker-entrypoint-initdb.d/init.sql  # Mount the SQL script for eshop_db
+      - ./init_eshop_db.sql:/docker-entrypoint-initdb.d/init.sql  
     ports:
       - "5432:5432"
 
-  # PostgreSQL container for orders_db
+  #container for orders_db
   orders_db:
     image: postgres:17
     container_name: orders_db
@@ -75,9 +75,9 @@ services:
       POSTGRES_DB: orders_db
     volumes:
       - orders_db_data:/var/lib/postgresql/data
-      - ./init_orders_db.sql:/docker-entrypoint-initdb.d/init.sql  # Mount the SQL script for orders_db
+      - ./init_orders_db.sql:/docker-entrypoint-initdb.d/init.sql  
     ports:
-      - "5433:5432"  # Different port mapping to avoid conflicts with eshop_db
+      - "5433:5432"  
 
 volumes:
   eshop_db_data:

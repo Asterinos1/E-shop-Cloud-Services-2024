@@ -1,4 +1,3 @@
-/* General Reset */
 * {
     margin: 0;
     padding: 0;
@@ -7,8 +6,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #1E2A47; /* Dark Blue Background */
-    color: #f1f1f1; /* Light text color for contrast */
+    background-color: #1E2A47; 
+    color: #f1f1f1;
     line-height: 1.6;
 }
 
@@ -16,26 +15,25 @@ h1, h2, h3, p {
     margin-bottom: 15px;
 }
 
-/* Header Styles */
 .shop-title {
     text-align: center;
     font-size: 2.5rem;
-    color: #61A1D7; /* Soft blue color */
+    color: #61A1D7; 
     margin-top: 30px;
 }
 
 .navbar {
     display: flex;
     justify-content: center;
-    background-color: #253A56; /* Darker blue for navbar */
+    background-color: #253A56; 
     padding: 10px 0;
     border-radius: 8px;
     margin-bottom: 30px;
 }
 
 .navbar button {
-    background-color: #3E5B80; /* Blue button background */
-    color: #f1f1f1; /* White text */
+    background-color: #3E5B80; 
+    color: #f1f1f1; 
     font-size: 1rem;
     border: none;
     padding: 10px 20px;
@@ -46,10 +44,9 @@ h1, h2, h3, p {
 }
 
 .navbar button:hover {
-    background-color: #5A7FAE; /* Lighter blue on hover */
+    background-color: #5A7FAE; 
 }
 
-/* Search Bar */
 .search-container {
     display: flex;
     justify-content: center;
@@ -68,11 +65,10 @@ h1, h2, h3, p {
 }
 
 #search-bar:focus {
-    border-color: #61A1D7; /* Light blue border on focus */
+    border-color: #61A1D7; 
     outline: none;
 }
 
-/* Product List Styles */
 #product-list, #cart-list, #orders-list {
     list-style-type: none;
     padding: 0;
@@ -88,18 +84,18 @@ h1, h2, h3, p {
 }
 
 .product-item:hover {
-    background-color: #3C4A62; /* Slightly lighter hover effect */
+    background-color: #3C4A62; 
 }
 
 .product-item h3 {
     font-size: 1.8rem;
     margin-bottom: 10px;
-    color: #61A1D7; /* Blue text */
+    color: #61A1D7; 
 }
 
 .product-item p {
     font-size: 1rem;
-    color: #B0B0B0; /* Light grey text */
+    color: #B0B0B0; 
 }
 
 .product-item img {
@@ -120,10 +116,9 @@ h1, h2, h3, p {
 }
 
 .product-item button:hover {
-    background-color: #5A7FAE; /* Lighter blue on hover */
+    background-color: #5A7FAE; 
 }
 
-/* Form Styles */
 .product-form {
     background-color: #253A56;
     padding: 20px;
@@ -169,7 +164,6 @@ h1, h2, h3, p {
     background-color: #5A7FAE;
 }
 
-/* Order Styles */
 #orders-list li {
     background-color: #2F4352;
     padding: 20px;
@@ -188,7 +182,6 @@ h1, h2, h3, p {
     color: #B0B0B0;
 }
 
-/* Cart Page */
 #total-price {
     font-size: 1.5rem;
     color: #61A1D7;
@@ -227,8 +220,6 @@ button#reset-cart-btn {
     background-color: #5A7FAE;
 }
 
-
-/* Responsive Design */
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;

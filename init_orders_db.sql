@@ -1,4 +1,3 @@
--- Create the orders table in orders_db
 CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
     products JSONB NOT NULL,

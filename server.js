@@ -6,17 +6,16 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve uploaded images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// For image upload, will be completed at some point.
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors());
 
-// New for docker use
-const apiUrl = 'http://api:5000/api/products';  // Use 'api' as the service name
+//new for docker use
+const apiUrl = 'http://api:5000/api/products'; 
 
-// API endpoint to get products
+//endpoint to get products
 app.get('/products', async (req, res) => {
     try {
         const response = await axios.get(apiUrl);
@@ -27,12 +26,11 @@ app.get('/products', async (req, res) => {
     }
 });
 
-// Serve the index.html file by default
+//Default page should be the products page.
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

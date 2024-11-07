@@ -1,58 +1,51 @@
 const express = require('express');
 const { Pool } = require('pg');
-
-//new
 const cors = require('cors'); // Import CORS
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 //Regarding image handling **********
-const multer = require('multer');
-const path = require('path');
+//Will be used later
+// const multer = require('multer');
+// const path = require('path');
 
-// Set storage engine
-const storage = multer.diskStorage({
-    destination: './uploads',
-    filename: (req, file, cb) => {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); // Create a unique filename
-    }
-});
+//Set storage engine
+// const storage = multer.diskStorage({
+//     destination: './uploads',
+//     filename: (req, file, cb) => {
+//         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); // Create a unique filename
+//     }
+// });
 
-// Initialize upload variable
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 1000000 }, // Limit file size to 1MB
-    fileFilter: (req, file, cb) => {
-        checkFileType(file, cb);
-    }
-}).single('image'); // Expect a single file upload with the field name "image"
+//Initialize upload variable
+// const upload = multer({
+//     storage: storage,
+//     limits: { fileSize: 1000000 }, // Limit file size to 1MB
+//     fileFilter: (req, file, cb) => {
+//         checkFileType(file, cb);
+//     }
+// }).single('image'); // Expect a single file upload with the field name "image"
 
-// Check file type
-function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb('Error: Images Only!'); // Error message if the file type is not allowed
-    }
-}
+//Check file type
+// function checkFileType(file, cb) {
+//     const filetypes = /jpeg|jpg|png|gif/;
+//     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+//     const mimetype = filetypes.test(file.mimetype);
+//     if (mimetype && extname) {
+//         return cb(null, true);
+//     } else {
+//         cb('Error: Images Only!'); // Error message if the file type is not allowed
+//     }
+// }
 //end of image handling**********
 
 // new as of 27/10 
 app.use(express.json());
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
+app.use(cors()); 
 
-// Enable CORS
-app.use(cors()); // This will allow all origins
-
-
-
-// Configure the PostgreSQL connection
+//For local testing (no containers)
 // const pool = new Pool({
 //     user: 'postgres',  
 //     host: 'localhost',
@@ -61,15 +54,8 @@ app.use(cors()); // This will allow all origins
 //     port: 5432,
 // });
 
-// const pool = new Pool({
-//     user: 'postgres',
-//     host: 'eshop_db',  // Use service name here
-//     database: 'eshop_db',
-//     password: 'asterinos',
-//     port: 5432,
-// });
 
-// Configure the PostgreSQL connection using environment variables
+//For container use
 const pool = new Pool({
     user: process.env.DB_USER,  
     host: process.env.DB_HOST,
@@ -80,7 +66,9 @@ const pool = new Pool({
 
 
 
-// API endpoint to get products
+// API endpoints
+
+//Get products
 app.get('/api/products', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM products');
@@ -91,7 +79,7 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-// API endpoint to add a new product
+// add a new product
 app.post('/api/products', async (req, res) => {
     const { name, description, price, image_url, quantity } = req.body;
     
@@ -111,7 +99,7 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
-// API endpoint to delete a product by ID
+// delete a product by ID
 app.delete('/api/products/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -127,7 +115,7 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// API endpoint to update a product by ID
+//update a product by ID
 app.put('/api/products/:id', async (req, res) => {
     const { id } = req.params;
     const { name, description, price, image_url, quantity } = req.body;
@@ -160,8 +148,6 @@ app.put('/api/products/:id', async (req, res) => {
     }
 });
 
-
-// Start the API server
 app.listen(PORT, () => {
-    console.log(`API server is running on http://localhost:${PORT}`);
+    console.log(`Prodcuts API server is running on port:${PORT}`);
 });
