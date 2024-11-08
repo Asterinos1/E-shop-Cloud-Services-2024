@@ -1,6 +1,7 @@
-# e-shop-project
+# E-shop-project
 This rep contains the project for the 'Services in Cloud and Fog Computing' course at TUC.
 
-
-open 2 terminals one in project folder, the other at /api folder.
-in main folder run nodemon server, in /api run nodemon api
+**This is the containerised version of the e-shop.**
+- Make sure you have docker installed.
+- Download the rep on your pc, extract the content and inside the directory run docker compose up --build
+- The eshop should be up and running on http://localhost:3000
