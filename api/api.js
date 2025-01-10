@@ -17,11 +17,10 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 app.use(cors({
-    origin: [
-        'http://localhost:3000', // Frontend
-        'http://localhost:8080', // Keycloak server
-    ],
+    origin: ['http://localhost:3000', 'http://localhost:8080'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
+    allowedHeaders: ['Authorization', 'Content-Type']
 }));
 
 app.use(session({
@@ -30,6 +29,7 @@ app.use(session({
     saveUninitialized: true,
     store: memoryStore,
 }));
+
 app.use(keycloak.middleware());
 
 

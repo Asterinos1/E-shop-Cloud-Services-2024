@@ -16,6 +16,9 @@ async function initKeycloak() {
 
         if (keycloak.authenticated) {
             console.log('User authenticated:', keycloak.tokenParsed.preferred_username);
+            console.log('Token:', keycloak.token);
+            console.log('Parsed Token:', keycloak.tokenParsed);
+
             //document.getElementById('user-info').textContent = `Hello, ${keycloak.tokenParsed.preferred_username}`;
             setupRoleBasedUI();
             // Start periodic token refresh
@@ -36,19 +39,31 @@ async function initKeycloak() {
 }
 
 function setupRoleBasedUI() {
-    const roles = keycloak.tokenParsed.resource_access?.['eshop-client']?.roles || [];
+    // Extract realm roles from the token
+    const roles = keycloak.tokenParsed.realm_access?.roles || [];
+    
     if (roles.includes('seller')) {
-        console.log("This is a seller")
+        console.log("This is a seller");
         document.getElementById('my-products-btn').style.display = 'block';
+    } else if (roles.includes('customer')) {
+        console.log("This is a customer");
+        document.getElementById('my-products-btn').style.display = 'none';
     } else {
-        console.log("This is NOT a seller")
+        console.log("This is NOT a seller NOR a customer.");
         document.getElementById('my-products-btn').style.display = 'none';
     }
 }
 
-function logout() {
-    keycloak.logout();
-}
+
+// function logout() {
+//     keycloak.logout();
+// }
+
+window.logout = function logout() {
+    keycloak.logout({
+        redirectUri: 'http://localhost:3000', // Redirect to the home page after logout
+    });
+};
 
 // Call Keycloak initialization on page load
 document.addEventListener('DOMContentLoaded', initKeycloak);
@@ -287,6 +302,9 @@ async function loadOrders() {
 
 //based on the page, call relevant functions 
 document.addEventListener("DOMContentLoaded", () => {
+    console.log('Token:', keycloak.token);
+    console.log('Parsed Token:', keycloak.tokenParsed);
+
     loadCartFromLocalStorage(); 
     updateCartCount(); 
     if (document.body.id === 'homepage') {
