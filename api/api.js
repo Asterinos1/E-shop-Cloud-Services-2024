@@ -62,8 +62,9 @@ app.get('/api/products', async (req, res) => {
 });
 
 //new secure post, put, delete for the seller only.
+// removed all the keycloak.protect() and verifyRole('seller')
 
-app.post('/api/products', keycloak.protect(), verifyRole('seller'), async (req, res) => {
+app.post('/api/products', async (req, res) => {
     const { name, description, price, image_url, quantity } = req.body;
     try {
         const result = await pool.query(
@@ -77,7 +78,7 @@ app.post('/api/products', keycloak.protect(), verifyRole('seller'), async (req, 
     }
 });
 
-app.put('/api/products/:id', keycloak.protect(), verifyRole('seller'), async (req, res) => {
+app.put('/api/products/:id',  async (req, res) => {
     const { id } = req.params;
     const { name, description, price, image_url, quantity } = req.body;
     try {
@@ -98,7 +99,7 @@ app.put('/api/products/:id', keycloak.protect(), verifyRole('seller'), async (re
     }
 });
 
-app.delete('/api/products/:id', keycloak.protect(), verifyRole('seller'), async (req, res) => {
+app.delete('/api/products/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
