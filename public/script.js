@@ -38,26 +38,66 @@ async function initKeycloak() {
     }
 }
 
+// function setupRoleBasedUI() {
+//     // Extract realm roles from the token
+//     const roles = keycloak.tokenParsed.realm_access?.roles || [];
+    
+//     if (roles.includes('seller')) {
+//         console.log("This is a seller");
+//         document.getElementById('my-products-btn').style.display = 'block';
+//     } else if (roles.includes('customer')) {
+//         console.log("This is a customer");
+//         document.getElementById('my-products-btn').style.display = 'none';
+//     } else {
+//         console.log("This is NOT a seller NOR a customer.");
+//         document.getElementById('my-products-btn').style.display = 'none';
+//     }
+// }
+
+
 function setupRoleBasedUI() {
     // Extract realm roles from the token
     const roles = keycloak.tokenParsed.realm_access?.roles || [];
-    
-    if (roles.includes('seller')) {
+
+    // Get references to the navigation buttons
+    const myProductsBtn = document.getElementById('my-products-btn');
+    const indexBtn = document.getElementById('index-btn');
+    const cartBtn = document.getElementById('cart-btn');
+    const ordersBtn = document.getElementById('orders-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    // Hide all buttons initially
+    myProductsBtn.style.display = 'none';
+    indexBtn.style.display = 'none';
+    cartBtn.style.display = 'none';
+    ordersBtn.style.display = 'none';
+    logoutBtn.style.display = 'none';
+
+    // Show buttons based on roles
+    if (roles.includes('admin')) {
+        console.log("This is an admin");
+        // Admin can see everything
+        myProductsBtn.style.display = 'block';
+        indexBtn.style.display = 'block';
+        cartBtn.style.display = 'block';
+        ordersBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
+    } else if (roles.includes('seller')) {
         console.log("This is a seller");
-        document.getElementById('my-products-btn').style.display = 'block';
+        // Seller can see only 'my-products' and logout
+        myProductsBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
     } else if (roles.includes('customer')) {
         console.log("This is a customer");
-        document.getElementById('my-products-btn').style.display = 'none';
+        // Customer can see index, cart, orders, and logout
+        indexBtn.style.display = 'block';
+        cartBtn.style.display = 'block';
+        ordersBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
     } else {
-        console.log("This is NOT a seller NOR a customer.");
-        document.getElementById('my-products-btn').style.display = 'none';
+        console.log("This user does not have a valid role.");
     }
 }
-
-
-// function logout() {
-//     keycloak.logout();
-// }
 
 window.logout = function logout() {
     keycloak.logout({
