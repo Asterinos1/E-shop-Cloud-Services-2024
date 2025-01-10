@@ -1,58 +1,36 @@
 const express = require('express');
+const session = require('express-session');
+const Keycloak = require('keycloak-connect');
 const { Pool } = require('pg');
 const cors = require('cors'); // Import CORS
+
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-//Regarding image handling **********
-//Will be used later
-// const multer = require('multer');
-// const path = require('path');
-
-//Set storage engine
-// const storage = multer.diskStorage({
-//     destination: './uploads',
-//     filename: (req, file, cb) => {
-//         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname)); // Create a unique filename
-//     }
-// });
-
-//Initialize upload variable
-// const upload = multer({
-//     storage: storage,
-//     limits: { fileSize: 1000000 }, // Limit file size to 1MB
-//     fileFilter: (req, file, cb) => {
-//         checkFileType(file, cb);
-//     }
-// }).single('image'); // Expect a single file upload with the field name "image"
-
-//Check file type
-// function checkFileType(file, cb) {
-//     const filetypes = /jpeg|jpg|png|gif/;
-//     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-//     const mimetype = filetypes.test(file.mimetype);
-//     if (mimetype && extname) {
-//         return cb(null, true);
-//     } else {
-//         cb('Error: Images Only!'); // Error message if the file type is not allowed
-//     }
-// }
-//end of image handling**********
-
+// Keycloak setup
+const memoryStore = new session.MemoryStore();
+const keycloak = new Keycloak({ store: memoryStore });
+const bodyParser = require('body-parser');
 // new as of 27/10 
 app.use(express.json());
-const bodyParser = require('body-parser');
 app.use(bodyParser.json());
-app.use(cors()); 
 
-//For local testing (no containers)
-// const pool = new Pool({
-//     user: 'postgres',  
-//     host: 'localhost',
-//     database: 'eshop_db',   
-//     password: 'asterinos', 
-//     port: 5432,
-// });
+app.use(cors({
+    origin: [
+        'http://localhost:3000', // Frontend
+        'http://localhost:8080', // Keycloak server
+    ],
+    credentials: true,
+}));
+
+app.use(session({
+    secret: 'mysecret',
+    resave: false,
+    saveUninitialized: true,
+    store: memoryStore,
+}));
+app.use(keycloak.middleware());
 
 
 //For container use
@@ -64,9 +42,13 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-
-
-// API endpoints
+const verifyRole = (role) => (req, res, next) => {
+    const roles = req.kauth.grant.access_token.content.realm_access.roles;
+    if (roles.includes(role)) {
+        return next();
+    }
+    res.status(403).send('Forbidden');
+};
 
 //Get products
 app.get('/api/products', async (req, res) => {
@@ -79,14 +61,10 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-// add a new product
-app.post('/api/products', async (req, res) => {
-    const { name, description, price, image_url, quantity } = req.body;
-    
-    if (!name || !description || !price || !image_url || !quantity) {
-        return res.status(400).send('All fields are required');
-    }
+//new secure post, put, delete for the seller only.
 
+app.post('/api/products', keycloak.protect(), verifyRole('seller'), async (req, res) => {
+    const { name, description, price, image_url, quantity } = req.body;
     try {
         const result = await pool.query(
             'INSERT INTO products (name, description, price, image_url, quantity) VALUES ($1, $2, $3, $4, $5) RETURNING *',
@@ -99,32 +77,9 @@ app.post('/api/products', async (req, res) => {
     }
 });
 
-// delete a product by ID
-app.delete('/api/products/:id', async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
-        if (result.rowCount === 0) {
-            return res.status(404).send('Product not found');
-        }
-        res.status(200).json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
-});
-
-//update a product by ID
-app.put('/api/products/:id', async (req, res) => {
+app.put('/api/products/:id', keycloak.protect(), verifyRole('seller'), async (req, res) => {
     const { id } = req.params;
     const { name, description, price, image_url, quantity } = req.body;
-
-    // Validate input
-    if (!name && !description && !price && !image_url && !quantity) {
-        return res.status(400).send('At least one field is required to update');
-    }
-
     try {
         const result = await pool.query(
             `UPDATE products
@@ -136,11 +91,17 @@ app.put('/api/products/:id', async (req, res) => {
              WHERE id = $6 RETURNING *`,
             [name, description, price, image_url, quantity, id]
         );
+        res.status(200).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server error');
+    }
+});
 
-        if (result.rowCount === 0) {
-            return res.status(404).send('Product not found');
-        }
-
+app.delete('/api/products/:id', keycloak.protect(), verifyRole('seller'), async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
         res.status(200).json(result.rows[0]);
     } catch (err) {
         console.error(err);

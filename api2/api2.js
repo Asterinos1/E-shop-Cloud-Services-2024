@@ -10,7 +10,10 @@ const bodyParser = require('body-parser');
 //requests from frontend (server.js) API were being rejected.
 //not really needed for the final build
 const corsOptions = {
-    origin: 'http://localhost:3000', // Allow the frontend URL
+    origin: [
+        'http://localhost:3000', // Frontend
+        'http://localhost:8080', // Keycloak server
+    ], 
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific HTTP methods
   };
   
@@ -18,14 +21,6 @@ app.use(cors(corsOptions)); // Apply CORS with the specified options
 app.use(express.json());
 app.use(bodyParser.json());
 
-//Pool for local use (no containers)
-// const pool = new Pool({
-//     user: 'postgres',  
-//     host: 'localhost',
-//     database: 'orders_db',  // Connect to orders_db
-//     password: 'asterinos', // Your password
-//     port: 5432,
-// });
 
 //For container use
 const pool = new Pool({
@@ -85,50 +80,6 @@ app.post('/api/orders', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
-//For later use (most likely)
-// API endpoint to update an order by ID
-// app.put('/api/orders/:id', async (req, res) => {
-//     const { id } = req.params;
-//     const { products, total_price, status } = req.body;
-
-// Validate input
-//     if (!products && !total_price && !status) {
-//         return res.status(400).send('At least one field is required to update');
-//     }
-//     try {
-//         const result = await pool.query(
-//             `UPDATE orders
-//              SET products = COALESCE($1, products),
-//                  total_price = COALESCE($2, total_price),
-//                  status = COALESCE($3, status)
-//              WHERE id = $4 RETURNING *`,
-//             [products, total_price, status, id]
-//         );
-//         if (result.rowCount === 0) {
-//             return res.status(404).send('Order not found');
-//         }
-//         res.status(200).json(result.rows[0]);
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).send('Server error');
-//     }
-// });
-
-// API endpoint to delete an order by ID
-// app.delete('/api/orders/:id', async (req, res) => {
-//     const { id } = req.params;
-//     try {
-//         const result = await pool.query('DELETE FROM orders WHERE id = $1 RETURNING *', [id]);
-//         if (result.rowCount === 0) {
-//             return res.status(404).send('Order not found');
-//         }
-//         res.status(200).json(result.rows[0]);
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).send('Server error');
-//     }
-// });
 
 app.listen(PORT, () => {
     console.log(`Orders API server is running on port:${PORT}`);

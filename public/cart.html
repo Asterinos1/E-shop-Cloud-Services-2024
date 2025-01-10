@@ -11,7 +11,7 @@
     <div class="navbar">
         <button onclick="location.href='index.html'">Home</button>
         <button onclick="location.href='cart.html'">Shopping Cart <span id="cart-count">0</span></button>
-        <button onclick="location.href='my-products.html'">My Products</button>
+        <button id="my-products-btn" onclick="location.href='my-products.html'">My Products</button>
         <button onclick="location.href='orders.html'">Orders</button>
     </div>
     
@@ -21,6 +21,7 @@
     <button id="place-order-btn" onclick="placeOrder()">Place Order</button>
     <button id="reset-cart-btn" onclick="resetCart()">Reset Cart</button>
 
-    <script src="script.js"></script>
+    <script src="keycloak.min.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

@@ -1,6 +1,57 @@
 let allProducts = []; //storing all products globally to filter later
 let cart = {}; //storing cart items with their quantities
 
+const keycloak = new Keycloak({
+    url: 'http://localhost:8080',
+    realm: 'eshop',
+    clientId: 'eshop-client',
+});
+
+async function initKeycloak() {
+    try {
+        await keycloak.init({
+            onLoad: 'login-required',
+            checkLoginIframe: false, // Disable login iframe check if not needed
+        });
+
+        if (keycloak.authenticated) {
+            console.log('User authenticated:', keycloak.tokenParsed.preferred_username);
+            //document.getElementById('user-info').textContent = `Hello, ${keycloak.tokenParsed.preferred_username}`;
+            setupRoleBasedUI();
+
+            // Start periodic token refresh
+            setInterval(() => {
+                keycloak.updateToken(30).then((refreshed) => {
+                    if (refreshed) {
+                        console.log('[KEYCLOAK] Token refreshed');
+                    }
+                }).catch((error) => {
+                    console.error('[KEYCLOAK] Failed to refresh token:', error);
+                    keycloak.logout();
+                });
+            }, 30000); // Refresh token every 30 seconds
+        }
+    } catch (error) {
+        console.error('Failed to initialize Keycloak:', error);
+    }
+}
+
+function setupRoleBasedUI() {
+    const roles = keycloak.tokenParsed.realm_access.roles;
+    if (roles.includes('seller')) {
+        document.getElementById('my-products-btn').style.display = 'block';
+    } else {
+        document.getElementById('my-products-btn').style.display = 'none';
+    }
+}
+
+function logout() {
+    keycloak.logout();
+}
+
+// Call Keycloak initialization on page load
+document.addEventListener('DOMContentLoaded', initKeycloak);
+
 async function loadProducts() {
     try {
         const response = await fetch('/products');

@@ -20,6 +20,8 @@ services:
       - ORDERS_DB_USER=postgres
       - ORDERS_DB_PASSWORD=asterinos
       - ORDERS_DB_NAME=orders_db
+    volumes:
+      - ./keycloak.json:/usr/src/app/keycloak.json
 
   #container for eshop_db api
   api:
@@ -78,7 +80,38 @@ services:
       - ./init_orders_db.sql:/docker-entrypoint-initdb.d/init.sql  
     ports:
       - "5433:5432"  
+    
+  #container for the keycloak and   
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: keycloak_db
+      DB_DATABASE: keyclo ak
+      DB_USER: keycloak
+      DB_PASSWORD: keycloakpassword
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: adminpassword
+    command:
+      start-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak_db
+    
+
+  keycloak_db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloakpassword
+      POSTGRES_DB: keycloak
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+
 
 volumes:
   eshop_db_data:
   orders_db_data:
+  keycloak_db_data:
+  

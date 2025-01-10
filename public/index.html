@@ -12,7 +12,7 @@
     <div class="navbar">
         <button onclick="location.href='index.html'">Home</button>
         <button onclick="location.href='cart.html'">Shopping Cart <span id="cart-count">0</span></button>
-        <button onclick="location.href='my-products.html'">My Products</button>
+        <button id="my-products-btn" onclick="location.href='my-products.html'">My Products</button>
         <button onclick="location.href='orders.html'">Orders</button>
     </div>
 
@@ -23,6 +23,11 @@
     <h1>Products</h1>
     <ul id="product-list"></ul>
 
-    <script src="script.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/keycloak-js@latest/dist/keycloak.min.js" type="module"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/keycloak-js@7.0.0/dist/keycloak.js"></script> -->
+    <!-- <script src="keycloak.js"></script> -->
+    <script src="keycloak.min.js"></script>
+    <script type="module" src="script.js"></script>
+
 </body>
 </html>
