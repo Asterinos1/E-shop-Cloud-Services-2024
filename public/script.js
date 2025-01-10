@@ -18,7 +18,6 @@ async function initKeycloak() {
             console.log('User authenticated:', keycloak.tokenParsed.preferred_username);
             //document.getElementById('user-info').textContent = `Hello, ${keycloak.tokenParsed.preferred_username}`;
             setupRoleBasedUI();
-
             // Start periodic token refresh
             setInterval(() => {
                 keycloak.updateToken(30).then((refreshed) => {
@@ -37,10 +36,12 @@ async function initKeycloak() {
 }
 
 function setupRoleBasedUI() {
-    const roles = keycloak.tokenParsed.realm_access.roles;
+    const roles = keycloak.tokenParsed.resource_access?.['eshop-client']?.roles || [];
     if (roles.includes('seller')) {
+        console.log("This is a seller")
         document.getElementById('my-products-btn').style.display = 'block';
     } else {
+        console.log("This is NOT a seller")
         document.getElementById('my-products-btn').style.display = 'none';
     }
 }

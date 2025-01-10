@@ -25,6 +25,7 @@ app.use(cors({
     origin: [
         'http://localhost:3000', // Frontend
         'http://localhost:8080', // Keycloak server
+        'http://localhost:3000/products',
     ],
     credentials: true,              // Allow cookies and credentials
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
@@ -46,7 +47,7 @@ app.use(keycloak.middleware());
 const apiUrl = 'http://api:5000/api/products'; 
 
 // Protect routes 
-app.get('/products', keycloak.protect(), async (req, res) => {
+app.get('/products', async (req, res) => {
     try {
         const response = await axios.get(apiUrl);
         res.json(response.data);
