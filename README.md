@@ -14,4 +14,4 @@ In this version there are 2 premade users:
 
 Each user has his corresponding role and every new user that registers is
 a customer by default. You need to login as admin (admin, adminpassword) 
-and manually update the roles. 
+and manually update the roles (localhost:8080/admin). 
