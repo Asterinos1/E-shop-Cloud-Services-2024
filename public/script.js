@@ -212,7 +212,7 @@ function updateCartCount() {
 }
 
 //filter products based on search input
-function searchProducts() {
+window.searchProducts = function searchProducts() {
     const searchInput = document.getElementById('search-bar').value.toLowerCase();
     const filteredProducts = allProducts.filter(product => 
         product.name.toLowerCase().includes(searchInput) ||
