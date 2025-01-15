@@ -6,6 +6,11 @@ const app = express();
 const PORT = process.env.PORT || 5001; 
 const bodyParser = require('body-parser');
 
+// Kafka setup
+const { Kafka } = require('kafkajs');
+const kafka = new Kafka({ brokers: ['kafka:9092'] });
+const producer = kafka.producer();
+
 //added for troubleshoot regarding docker testing
 //requests from frontend (server.js) API were being rejected.
 //not really needed for the final build
@@ -30,6 +35,15 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD, 
     port: process.env.DB_PORT,
 });
+
+async function sendOrderToKafka(order) {
+    await producer.connect();
+    await producer.send({
+        topic: 'order-topic',
+        messages: [{ value: JSON.stringify(order) }],
+    });
+    await producer.disconnect();
+}
 
 // API endpoints
 //get all orders
@@ -63,18 +77,19 @@ app.get('/api/orders/:id', async (req, res) => {
 app.post('/api/orders', async (req, res) => {
     const { products, total_price, status } = req.body;
 
-    // Validate input
     if (!products || !total_price || !status) {
         return res.status(400).send('All fields are required');
     }
 
     try {
-        // Insert into the database with products being passed as a JSON object
         const result = await pool.query(
             'INSERT INTO orders (products, total_price, status) VALUES ($1, $2, $3) RETURNING *',
-            [JSON.stringify(products), total_price, status] // Convert products to JSON format
+            [JSON.stringify(products), total_price, status]
         );
-        res.status(201).json(result.rows[0]);
+        const order = result.rows[0];
+        // Send the new order to Kafka
+        await sendOrderToKafka(order);
+        res.status(201).json(order);
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');

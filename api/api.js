@@ -4,6 +4,10 @@ const Keycloak = require('keycloak-connect');
 const { Pool } = require('pg');
 const cors = require('cors'); // Import CORS
 
+//kafka setup
+const { Kafka } = require('kafkajs');
+const kafka = new Kafka({ brokers: ['kafka:9092'] });
+const consumer = kafka.consumer({ groupId: 'product-service' });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,6 +46,7 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+
 const verifyRole = (role) => (req, res, next) => {
     const roles = req.kauth.grant.access_token.content.realm_access.roles;
     if (roles.includes(role)) {
@@ -49,6 +54,49 @@ const verifyRole = (role) => (req, res, next) => {
     }
     res.status(403).send('Forbidden');
 };
+
+async function consumeOrders() {
+    await consumer.connect();
+    await consumer.subscribe({ topic: 'order-topic', fromBeginning: true });
+
+    await consumer.run({
+        eachMessage: async ({ message }) => {
+            const order = JSON.parse(message.value.toString());
+
+            for (const product of order.products) {
+                const { product_id, amount } = product;
+
+                try {
+                    const result = await pool.query(
+                        'SELECT quantity FROM products WHERE id = $1',
+                        [product_id]
+                    );
+                    if (result.rowCount === 0) {
+                        console.error(`Product with id ${product_id} not found.`);
+                        continue;
+                    }
+
+                    const currentQuantity = result.rows[0].quantity;
+
+                    if (currentQuantity >= amount) {
+                        await pool.query(
+                            'UPDATE products SET quantity = quantity - $1 WHERE id = $2',
+                            [amount, product_id]
+                        );
+                        // Optionally publish success status back to Kafka (if needed)
+                    } else {
+                        console.error(`Insufficient quantity for product id ${product_id}`);
+                        // Optionally publish failure status back to Kafka (if needed)
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        },
+    });
+}
+
+consumeOrders().catch(console.error);
 
 //Get products
 app.get('/api/products', async (req, res) => {

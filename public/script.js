@@ -11,7 +11,7 @@ async function initKeycloak() {
     try {
         await keycloak.init({
             onLoad: 'login-required',
-            checkLoginIframe: false, // Disable login iframe check if not needed
+            checkLoginIframe: false, 
         });
 
         if (keycloak.authenticated) {
@@ -19,9 +19,8 @@ async function initKeycloak() {
             console.log('Token:', keycloak.token);
             console.log('Parsed Token:', keycloak.tokenParsed);
 
-            //document.getElementById('user-info').textContent = `Hello, ${keycloak.tokenParsed.preferred_username}`;
             setupRoleBasedUI();
-            // Start periodic token refresh
+            //periodic token refresh
             setInterval(() => {
                 keycloak.updateToken(30).then((refreshed) => {
                     if (refreshed) {
@@ -31,52 +30,36 @@ async function initKeycloak() {
                     console.error('[KEYCLOAK] Failed to refresh token:', error);
                     keycloak.logout();
                 });
-            }, 30000); // Refresh token every 30 seconds
+            }, 30000); //every 30 seconds
         }
     } catch (error) {
         console.error('Failed to initialize Keycloak:', error);
     }
 }
 
-// function setupRoleBasedUI() {
-//     // Extract realm roles from the token
-//     const roles = keycloak.tokenParsed.realm_access?.roles || [];
-    
-//     if (roles.includes('seller')) {
-//         console.log("This is a seller");
-//         document.getElementById('my-products-btn').style.display = 'block';
-//     } else if (roles.includes('customer')) {
-//         console.log("This is a customer");
-//         document.getElementById('my-products-btn').style.display = 'none';
-//     } else {
-//         console.log("This is NOT a seller NOR a customer.");
-//         document.getElementById('my-products-btn').style.display = 'none';
-//     }
-// }
-
 
 function setupRoleBasedUI() {
-    // Extract realm roles from the token
+    //get realm role
     const roles = keycloak.tokenParsed.realm_access?.roles || [];
 
-    // Get references to the navigation buttons
     const myProductsBtn = document.getElementById('my-products-btn');
     const indexBtn = document.getElementById('index-btn');
     const cartBtn = document.getElementById('cart-btn');
     const ordersBtn = document.getElementById('orders-btn');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // Hide all buttons initially
     myProductsBtn.style.display = 'none';
     indexBtn.style.display = 'none';
     cartBtn.style.display = 'none';
     ordersBtn.style.display = 'none';
     logoutBtn.style.display = 'none';
 
-    // Show buttons based on roles
+    //show buttons based on roles
+    //admin: can see everything
+    //seller" can see only 'my-products' and logout
+    //customer: can see index, cart, orders, and logout
     if (roles.includes('admin')) {
         console.log("This is an admin");
-        // Admin can see everything
         myProductsBtn.style.display = 'block';
         indexBtn.style.display = 'block';
         cartBtn.style.display = 'block';
@@ -84,12 +67,10 @@ function setupRoleBasedUI() {
         logoutBtn.style.display = 'block';
     } else if (roles.includes('seller')) {
         console.log("This is a seller");
-        // Seller can see only 'my-products' and logout
         myProductsBtn.style.display = 'block';
         logoutBtn.style.display = 'block';
     } else if (roles.includes('customer')) {
         console.log("This is a customer");
-        // Customer can see index, cart, orders, and logout
         indexBtn.style.display = 'block';
         cartBtn.style.display = 'block';
         ordersBtn.style.display = 'block';
@@ -101,11 +82,11 @@ function setupRoleBasedUI() {
 
 window.logout = function logout() {
     keycloak.logout({
-        redirectUri: 'http://localhost:3000', // Redirect to the home page after logout
+        redirectUri: 'http://localhost:3000',
     });
 };
 
-// Call Keycloak initialization on page load
+//initialization on page load
 document.addEventListener('DOMContentLoaded', initKeycloak);
 
 async function loadProducts() {
