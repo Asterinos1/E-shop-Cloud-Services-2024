@@ -1,29 +1,116 @@
-let allProducts = []; // Store all products globally to filter later
-let cart = {}; // Store cart items with their quantities
+let allProducts = []; //storing all products globally to filter later
+let cart = {}; //storing cart items with their quantities
+
+const keycloak = new Keycloak({
+    url: 'http://localhost:8080',
+    realm: 'eshop',
+    clientId: 'eshop-client',
+});
+
+async function initKeycloak() {
+    try {
+        await keycloak.init({
+            onLoad: 'login-required',
+            checkLoginIframe: false, 
+        });
+
+        if (keycloak.authenticated) {
+            console.log('User authenticated:', keycloak.tokenParsed.preferred_username);
+            console.log('Token:', keycloak.token);
+            console.log('Parsed Token:', keycloak.tokenParsed);
+
+            setupRoleBasedUI();
+            //periodic token refresh
+            setInterval(() => {
+                keycloak.updateToken(30).then((refreshed) => {
+                    if (refreshed) {
+                        console.log('[KEYCLOAK] Token refreshed');
+                    }
+                }).catch((error) => {
+                    console.error('[KEYCLOAK] Failed to refresh token:', error);
+                    keycloak.logout();
+                });
+            }, 30000); //every 30 seconds
+        }
+    } catch (error) {
+        console.error('Failed to initialize Keycloak:', error);
+    }
+}
+
+
+function setupRoleBasedUI() {
+    //get realm role
+    const roles = keycloak.tokenParsed.realm_access?.roles || [];
+
+    const myProductsBtn = document.getElementById('my-products-btn');
+    const indexBtn = document.getElementById('index-btn');
+    const cartBtn = document.getElementById('cart-btn');
+    const ordersBtn = document.getElementById('orders-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    myProductsBtn.style.display = 'none';
+    indexBtn.style.display = 'none';
+    cartBtn.style.display = 'none';
+    ordersBtn.style.display = 'none';
+    logoutBtn.style.display = 'none';
+
+    //show buttons based on roles
+    //admin: can see everything
+    //seller" can see only 'my-products' and logout
+    //customer: can see index, cart, orders, and logout
+    if (roles.includes('admin')) {
+        console.log("This is an admin");
+        myProductsBtn.style.display = 'block';
+        indexBtn.style.display = 'block';
+        cartBtn.style.display = 'block';
+        ordersBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
+    } else if (roles.includes('seller')) {
+        console.log("This is a seller");
+        myProductsBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
+    } else if (roles.includes('customer')) {
+        console.log("This is a customer");
+        indexBtn.style.display = 'block';
+        cartBtn.style.display = 'block';
+        ordersBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
+    } else {
+        console.log("This user does not have a valid role.");
+    }
+}
+
+window.logout = function logout() {
+    keycloak.logout({
+        redirectUri: 'http://localhost:3000',
+    });
+};
+
+//initialization on page load
+document.addEventListener('DOMContentLoaded', initKeycloak);
 
 async function loadProducts() {
     try {
         const response = await fetch('/products');
         const products = await response.json();
         
-        allProducts = products; // Store products in the global variable
-        displayProducts(allProducts); // Display all products initially
+        allProducts = products; //save products in the global variable
+        displayProducts(allProducts);
 
     } catch (error) {
         console.error('Error loading products:', error);
     }
 }
 
-// Function to display the list of products
+//display the list of products
 function displayProducts(products) {
     const productList = document.getElementById('product-list');
-    productList.innerHTML = ''; // Clear any existing content
-
+    productList.innerHTML = '';
     products.forEach(product => {
         const li = document.createElement('li');
         li.classList.add('product-item');
         
-        // Create product details
+        //product details
         const name = document.createElement('h3');
         name.textContent = product.name;
         
@@ -33,16 +120,16 @@ function displayProducts(products) {
         const description = document.createElement('p');
         description.textContent = `Description: ${product.description}`;
     
-        // Create image element
+        //setting image element
         const img = document.createElement('img');
-        img.src = product.image_url; // Set image source
-        img.alt = product.name; // Set alt text
-        img.style.maxWidth = '200px'; // Set maximum width for display
+        img.src = product.image_url; 
+        img.alt = product.name; 
+        img.style.maxWidth = '200px'; 
     
         const quantity = document.createElement('p');
         quantity.textContent = `Quantity: ${product.quantity}`;
         
-        // Create counter for adding/removing products
+        //counter for adding/removing products
         const counterContainer = document.createElement('div');
         const minusButton = document.createElement('button');
         const quantityDisplay = document.createElement('span');
@@ -50,17 +137,15 @@ function displayProducts(products) {
 
         minusButton.textContent = '-';
         plusButton.textContent = '+';
-        quantityDisplay.textContent = cart[product.id] ? cart[product.id].quantity : 0; // Initial quantity in cart
+        quantityDisplay.textContent = cart[product.id] ? cart[product.id].quantity : 0;
         
         minusButton.onclick = () => updateCart(product, -1, quantityDisplay);
         plusButton.onclick = () => updateCart(product, 1, quantityDisplay);
         
-        // Append buttons and display to counter container
         counterContainer.appendChild(minusButton);
         counterContainer.appendChild(quantityDisplay);
         counterContainer.appendChild(plusButton);
-        
-        // Append elements to the product item
+    
         li.appendChild(img);
         li.appendChild(name);
         li.appendChild(price);
@@ -72,30 +157,28 @@ function displayProducts(products) {
     });
 }
 
-// Function to update the cart and the cart display
+//update the cart and the cart display
 function updateCart(product, change, quantityDisplay) {
-    // Update cart item quantity
     if (!cart[product.id]) {
-        cart[product.id] = { ...product, quantity: 0 }; // Initialize if not present
+        cart[product.id] = { ...product, quantity: 0 }; //initialize
     }
     cart[product.id].quantity += change;
     
-    // Ensure the quantity doesn't go below zero
     if (cart[product.id].quantity < 0) {
         cart[product.id].quantity = 0;
     }
 
-    quantityDisplay.textContent = cart[product.id].quantity; // Update UI
-    saveCartToLocalStorage(); // Save cart to local storage
-    updateCartCount(); // Update cart count display
+    quantityDisplay.textContent = cart[product.id].quantity;
+    saveCartToLocalStorage(); //save cart to local storage
+    updateCartCount();
 }
 
-// Function to save cart to local storage
+//save cart to local storage
 function saveCartToLocalStorage() {
-    localStorage.setItem('cart', JSON.stringify(cart)); // Store the cart object as a JSON string
+    localStorage.setItem('cart', JSON.stringify(cart)); 
 }
 
-// Function to load cart from local storage
+//load cart from local storage
 function loadCartFromLocalStorage() {
     const storedCart = localStorage.getItem('cart');
     if (storedCart) {
@@ -103,85 +186,87 @@ function loadCartFromLocalStorage() {
     }
 }
 
-// Function to update cart item count display
+//update cart item count display
 function updateCartCount() {
     const totalCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
-    document.getElementById('cart-count').textContent = totalCount; // Update cart count in navbar
+    document.getElementById('cart-count').textContent = totalCount; //update cart count in navbar
 }
 
-// Function to filter products based on search input
-function searchProducts() {
+//filter products based on search input
+window.searchProducts = function searchProducts() {
     const searchInput = document.getElementById('search-bar').value.toLowerCase();
-    
-    // Filter products that match the search input (in name or description)
     const filteredProducts = allProducts.filter(product => 
         product.name.toLowerCase().includes(searchInput) ||
         product.description.toLowerCase().includes(searchInput)
     );
-    
-    displayProducts(filteredProducts); // Display filtered products
+    displayProducts(filteredProducts); 
 }
 
-// Function to load cart items in cart.html
+//load cart items in cart.html
 function loadCart() {
     const cartList = document.getElementById('cart-list');
     const totalPriceElement = document.getElementById('total-price');
-    cartList.innerHTML = ''; // Clear existing items
-    let total = 0; // Initialize total price
+    cartList.innerHTML = ''; 
+    let total = 0; 
 
     Object.values(cart).forEach(item => {
         if (item.quantity > 0) {
             const li = document.createElement('li');
             li.textContent = `${item.name} - $${item.price} x ${item.quantity}`;
             cartList.appendChild(li);
-            total += item.price * item.quantity; // Add to total
+            total += item.price * item.quantity; 
         }
     });
 
-    totalPriceElement.textContent = total.toFixed(2); // Update total price
+    totalPriceElement.textContent = total.toFixed(2); 
 }
 
-// Function to reset the cart
+//reset the cart
 function resetCart() {
-    cart = {}; // Clear the cart
-    saveCartToLocalStorage(); // Save empty cart to local storage
-    loadCart(); // Refresh cart display
-    updateCartCount(); // Update cart count display
+    cart = {}; 
+    saveCartToLocalStorage(); 
+    loadCart(); 
+    updateCartCount(); 
 }
 
-// Function to place an order
+//place an order
 async function placeOrder() {
-    const cartItems = Object.values(cart).filter(item => item.quantity > 0); // Get all items with quantity > 0
+    const cartItems = Object.values(cart).filter(item => item.quantity > 0);
 
-    // Construct products array in the correct format for the API
+    if (cartItems.length === 0) {
+        alert('Empty cart! Please add products to the cart before placing an order.');
+        return; 
+    }
+
+    //format products for the API
     const products = cartItems.map(item => ({
         title: item.name,
         amount: item.quantity,
         product_id: item.id
     }));
 
-    const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0); // Calculate total price
+    const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-    // Create the order payload
     const orderData = {
-        products: products, // Send products as JSON
-        total_price: totalPrice.toFixed(2), // Total price with two decimal places
-        status: 'PENDING' // Default status for now
+        products: products, 
+        total_price: totalPrice.toFixed(2), 
+        status: 'PENDING'
     };
 
     try {
-        // Send POST request to create the order
+        // possible error when wroking on localhost
+        // const response = await fetch('http://localhost:5001/api/orders'
         const response = await fetch('http://localhost:5001/api/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(orderData) // Send order data as JSON
+            body: JSON.stringify(orderData) 
         });
 
         if (response.ok) {
             alert('Order placed successfully!');
-            resetCart(); // Clear the cart after successful order
+            resetCart();
         } else {
             const errorData = await response.json();
             console.error('Error placing order:', errorData);
@@ -193,35 +278,32 @@ async function placeOrder() {
     }
 }
 
-// Function to load orders and display them on the orders page
+//load orders and display them on the orders page
 async function loadOrders() {
     try {
-        // Fetch orders from the API
+        // possible error when wroking on localhost
+        //const response = await fetch('http://localhost:5001/api/orders');
         const response = await fetch('http://localhost:5001/api/orders');
         const orders = await response.json();
 
-        // Reference to the orders list in the HTML
         const ordersList = document.getElementById('orders-list');
-        ordersList.innerHTML = ''; // Clear any existing orders
+        ordersList.innerHTML = '';
 
         if (orders.length === 0) {
-            // If no orders, show a message
+            //if no orders
             ordersList.textContent = 'No orders have been placed yet.';
             return;
         }
 
-        // Loop through each order and display it
         orders.forEach(order => {
             const li = document.createElement('li');
             const orderDetails = document.createElement('div');
 
-            // Create a display for the order
             let productsDisplay = '';
             order.products.forEach(product => {
                 productsDisplay += `${product.title} (x${product.amount}) - Product ID: ${product.product_id}<br>`;
             });
 
-            // Fill order details
             orderDetails.innerHTML = `
                 <h3>Order ID: ${order.id}</h3>
                 <p>Products: <br>${productsDisplay}</p>
@@ -230,7 +312,6 @@ async function loadOrders() {
                 <hr>
             `;
 
-            // Append to the list
             li.appendChild(orderDetails);
             ordersList.appendChild(li);
         });
@@ -240,11 +321,13 @@ async function loadOrders() {
 }
 
 
-// Call relevant functions based on the page
+//based on the page, call relevant functions 
 document.addEventListener("DOMContentLoaded", () => {
-    loadCartFromLocalStorage(); // Load cart from local storage on page load
-    updateCartCount(); // Update cart count display
+    console.log('Token:', keycloak.token);
+    console.log('Parsed Token:', keycloak.tokenParsed);
 
+    loadCartFromLocalStorage(); 
+    updateCartCount(); 
     if (document.body.id === 'homepage') {
         loadProducts();
     } else if (document.body.id === 'cart-page') {

@@ -6,13 +6,14 @@
     <title>e-Shop - My Products</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body id="my-products-page">
     <h1 class="shop-title">E-SHOP</h1>
     <div class="navbar">
-        <button onclick="location.href='index.html'">Home</button>
-        <button onclick="location.href='cart.html'">Shopping Cart</button>
-        <button onclick="location.href='my-products.html'">My Products</button>
-        <button onclick="location.href='orders.html'">Orders</button>
+        <button id="index-btn" onclick="location.href='index.html'">Home</button>
+        <button id="cart-btn" onclick="location.href='cart.html'">Shopping Cart <span id="cart-count">0</span></button>
+        <button id="my-products-btn" onclick="location.href='my-products.html'">My Products</button>
+        <button id="orders-btn" onclick="location.href='orders.html'">Orders</button>
+        <button id="logout-btn" onclick="logout()">Logout</button>
     </div>
 
     <div id="content">
@@ -37,7 +38,7 @@
         </form>
 
         <h2>Your Products</h2>
-        <ul id="product-list"></ul> <!-- List to display products -->
+        <ul id="product-list"></ul> 
 
         <h2>Update Product</h2>
         <form id="update-product-form" style="display:none;" class="product-form">
@@ -50,19 +51,21 @@
             <label for="update-price">Price:</label>
             <input type="number" id="update-price" name="price" step="0.01">
 
-            <input type="hidden" id="update-id"> <!-- Hidden input to store the product ID -->
+            <input type="hidden" id="update-id"> 
             <button type="submit">Update Product</button>
         </form>
     </div>
 
+    <script src="keycloak.min.js"></script>
     <script>
-        // Fetch and display products on page load
+        //leaving this script here because of initiliasation issues
+        //to be fixed
         async function fetchProducts() {
             const response = await fetch('http://localhost:5000/api/products');
             const products = await response.json();
             const productList = document.getElementById('product-list');
 
-            productList.innerHTML = ''; // Clear the existing list
+            productList.innerHTML = '';
             products.forEach(product => {
                 const li = document.createElement('li');
                 li.classList.add('product-item');
@@ -72,32 +75,28 @@
                     <p>Price: $${product.price}</p>
                 `;
                 
-                // Create edit button
                 const editButton = document.createElement('button');
                 editButton.textContent = 'Edit';
                 editButton.onclick = () => loadProductForUpdate(product);
 
-                // Create delete button
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Delete';
                 deleteButton.onclick = () => deleteProduct(product.id);
 
-                li.appendChild(editButton); // Add the edit button to the list item
-                li.appendChild(deleteButton); // Add the delete button to the list item
-                productList.appendChild(li); // Add the list item to the product list
+                li.appendChild(editButton); 
+                li.appendChild(deleteButton); 
+                productList.appendChild(li); 
             });
         }
 
-        // Load product details into the update form
         function loadProductForUpdate(product) {
             document.getElementById('update-name').value = product.name;
             document.getElementById('update-description').value = product.description;
             document.getElementById('update-price').value = product.price;
-            document.getElementById('update-id').value = product.id; // Set the product ID
-            document.getElementById('update-product-form').style.display = 'block'; // Show update form
+            document.getElementById('update-id').value = product.id; 
+            document.getElementById('update-product-form').style.display = 'block'; 
         }
 
-        // Function to delete a product
         async function deleteProduct(id) {
             const response = await fetch(`http://localhost:5000/api/products/${id}`, {
                 method: 'DELETE'
@@ -105,14 +104,13 @@
 
             if (response.ok) {
                 alert('Product deleted successfully');
-                fetchProducts(); // Refresh the product list
+                fetchProducts(); 
             } else {
                 const errorMessage = await response.text();
                 alert(`Failed to delete product: ${errorMessage}`);
             }
         }
 
-        // Function to update a product
         document.getElementById('update-product-form').addEventListener('submit', async (event) => {
             event.preventDefault();
 
@@ -133,14 +131,13 @@
                 const updatedProduct = await response.json();
                 alert(`Product updated: ${updatedProduct.name}`);
                 document.getElementById('update-product-form').reset();
-                fetchProducts(); // Refresh the product list
+                fetchProducts(); 
             } else {
                 const errorMessage = await response.text();
                 alert(`Failed to update product: ${errorMessage}`);
             }
         });
 
-        // Event listener for adding products
         document.getElementById('add-product-form').addEventListener('submit', async (event) => {
             event.preventDefault();
 
@@ -162,18 +159,16 @@
                 const newProduct = await response.json();
                 alert(`Product added: ${newProduct.name}`);
                 document.getElementById('add-product-form').reset();
-                fetchProducts(); // Refresh the product list
+                fetchProducts(); 
             } else {
                 const errorMessage = await response.text();
                 alert(`Failed to add product: ${errorMessage}`);
             }
         });
 
-
-        // Load products when the page loads
         fetchProducts();
     </script>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

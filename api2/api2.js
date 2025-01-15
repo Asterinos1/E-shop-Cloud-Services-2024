@@ -1,28 +1,52 @@
 const express = require('express');
 const { Pool } = require('pg');
-const cors = require('cors'); // Import CORS
+const cors = require('cors'); 
 
 const app = express();
-const PORT = process.env.PORT || 5001; // Different port to avoid conflict with api.js
-
-// Middleware
-app.use(express.json());
+const PORT = process.env.PORT || 5001; 
 const bodyParser = require('body-parser');
+
+// Kafka setup
+const { Kafka } = require('kafkajs');
+const kafka = new Kafka({ brokers: ['kafka:9092'] });
+const producer = kafka.producer();
+
+//added for troubleshoot regarding docker testing
+//requests from frontend (server.js) API were being rejected.
+//not really needed for the final build
+const corsOptions = {
+    origin: [
+        'http://localhost:3000', // Frontend
+        'http://localhost:8080', // Keycloak server
+    ], 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific HTTP methods
+  };
+  
+app.use(cors(corsOptions)); // Apply CORS with the specified options
+app.use(express.json());
 app.use(bodyParser.json());
 
-// Enable CORS
-app.use(cors()); // This will allow all origins
 
-// Configure PostgreSQL connection to the orders_db
+//For container use
 const pool = new Pool({
-    user: 'postgres',  
-    host: 'localhost',
-    database: 'orders_db',  // Connect to orders_db
-    password: 'asterinos', // Your password
-    port: 5432,
+    user: process.env.DB_USER,  
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD, 
+    port: process.env.DB_PORT,
 });
 
-// API endpoint to get all orders
+async function sendOrderToKafka(order) {
+    await producer.connect();
+    await producer.send({
+        topic: 'order-topic',
+        messages: [{ value: JSON.stringify(order) }],
+    });
+    await producer.disconnect();
+}
+
+// API endpoints
+//get all orders
 app.get('/api/orders', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM orders');
@@ -33,7 +57,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// API endpoint to get a specific order by ID
+//get a specific order by ID
 app.get('/api/orders/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -49,77 +73,29 @@ app.get('/api/orders/:id', async (req, res) => {
     }
 });
 
-// API endpoint to create a new order
+//create a new order
 app.post('/api/orders', async (req, res) => {
     const { products, total_price, status } = req.body;
 
-    // Validate input
     if (!products || !total_price || !status) {
         return res.status(400).send('All fields are required');
     }
 
     try {
-        // Insert into the database with products being passed as a JSON object
         const result = await pool.query(
             'INSERT INTO orders (products, total_price, status) VALUES ($1, $2, $3) RETURNING *',
-            [JSON.stringify(products), total_price, status] // Convert products to JSON format
+            [JSON.stringify(products), total_price, status]
         );
-        res.status(201).json(result.rows[0]);
+        const order = result.rows[0];
+        // Send the new order to Kafka
+        await sendOrderToKafka(order);
+        res.status(201).json(order);
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');
     }
 });
 
-
-// API endpoint to update an order by ID
-app.put('/api/orders/:id', async (req, res) => {
-    const { id } = req.params;
-    const { products, total_price, status } = req.body;
-
-    // Validate input
-    if (!products && !total_price && !status) {
-        return res.status(400).send('At least one field is required to update');
-    }
-
-    try {
-        const result = await pool.query(
-            `UPDATE orders
-             SET products = COALESCE($1, products),
-                 total_price = COALESCE($2, total_price),
-                 status = COALESCE($3, status)
-             WHERE id = $4 RETURNING *`,
-            [products, total_price, status, id]
-        );
-
-        if (result.rowCount === 0) {
-            return res.status(404).send('Order not found');
-        }
-
-        res.status(200).json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
-});
-
-// API endpoint to delete an order by ID
-app.delete('/api/orders/:id', async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const result = await pool.query('DELETE FROM orders WHERE id = $1 RETURNING *', [id]);
-        if (result.rowCount === 0) {
-            return res.status(404).send('Order not found');
-        }
-        res.status(200).json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
-});
-
-// Start the API server
 app.listen(PORT, () => {
-    console.log(`API server for orders is running on http://localhost:${PORT}`);
+    console.log(`Orders API server is running on port:${PORT}`);
 });

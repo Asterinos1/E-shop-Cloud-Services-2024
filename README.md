@@ -1,9 +1,17 @@
-# E-shop-project (Local testing - No Docker)
+# E-shop-project (Docker-Keycloak)
 This rep contains the project for the 'Services in Cloud and Fog Computing' course at TUC.
 
-**Instructions**
-- Download the and extract the rep
-- While inside the main directory run nodemon server.js for the frontend
-- Access /api directory and run nodemon api.js for the products api (on a seperate terminal)
-- Access /api2 directory and run nodemon api2.js for the orders api (on a seperate terminal)
-- You need to create 2 postgreSQL databases, one called eshop_db with products table and another called orders_db according to the description  
+**This is the containerised version of the e-shop with Keycloak.**
+- Make sure you have docker installed.
+- Download the rep on your pc, extract the content and inside the directory run docker compose up --build
+- The eshop should be up and running on http://localhost:3000
+- (Make sure the port 5432 is not already in use by some other instance perhaps postgres)
+
+**Regarding Keycloak**
+In this version there are 2 premade users:
+- seller1  (username: seller1, password: seller1)
+- customer1 (username: customer1, password: customer1)
+
+Each user has his corresponding role and every new user that registers is
+a customer by default. You need to login as admin (admin, adminpassword) 
+and manually update the roles (localhost:8080/admin). 

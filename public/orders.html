@@ -9,16 +9,18 @@
 <body id="orders-page">
     <h1 class="shop-title">E-SHOP</h1>
     <div class="navbar">
-        <button onclick="location.href='index.html'">Home</button>
-        <button onclick="location.href='cart.html'">Shopping Cart <span id="cart-count">0</span></button>
-        <button onclick="location.href='my-products.html'">My Products</button>
-        <button onclick="location.href='orders.html'">Orders</button>
+        <button id="index-btn" onclick="location.href='index.html'">Home</button>
+        <button id="cart-btn" onclick="location.href='cart.html'">Shopping Cart <span id="cart-count">0</span></button>
+        <button id="my-products-btn" onclick="location.href='my-products.html'">My Products</button>
+        <button id="orders-btn" onclick="location.href='orders.html'">Orders</button>
+        <button id="logout-btn" onclick="logout()">Logout</button>
     </div>
 
     <h1>Your Orders</h1>
     <ul id="orders-list"></ul>
 
-    <script src="script.js"></script>
+    <script src="keycloak.min.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 
 </html>
