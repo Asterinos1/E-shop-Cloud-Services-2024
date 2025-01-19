@@ -17,7 +17,7 @@ a customer by default. You need to login as admin and manually update the roles.
 
 **Regarding Kafka**
 
-Kafka was not implemented
+- Kafka was not implemented
 
 **Final Grade**
-*7.5/10*
+- *7.5/10*
