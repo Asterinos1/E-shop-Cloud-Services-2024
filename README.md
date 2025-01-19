@@ -16,6 +16,7 @@ Each user has his corresponding role and every new user that registers is
 a customer by default. You need to login as admin and manually update the roles.
 
 **Regarding Kafka**
+
 Kafka was not implemented
 
 **Final Grade**
