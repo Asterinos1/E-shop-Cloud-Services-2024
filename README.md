@@ -1,5 +1,5 @@
 # E-shop-project (Docker-Keycloak)
-This rep contains the project for the 'Services in Cloud and Fog Computing' course at TUC.
+This rep contains the project for the 'Services in Cloud and Fog Computing' course at TUC (Fall, 2024).
 
 **This is the containerised version of the e-shop with Keycloak.**
 - Make sure you have docker installed.
